@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { TITLE_MAX } from '~/lib/constants'
+import { requestConfirm } from '~/composables/useConfirm'
+import { useUndoRedoHotkeys } from '~/composables/useUndoRedoHotkeys'
 import { validateForSave } from '~/lib/note-ops'
 import { useEditorStore } from '~/stores/editor'
+import { useNotesStore } from '~/stores/notes'
 
 const route = useRoute()
 const router = useRouter()
 const editor = useEditorStore()
+const notes = useNotesStore()
+
+let allowLeave = false
+
+useUndoRedoHotkeys()
 
 const titleRef = ref<{ focus: () => void } | null>(null)
 const listRef = ref<{ focusItem: (todoId: string) => void } | null>(null)
@@ -63,6 +71,69 @@ async function addTodoAfter(index?: number): Promise<void> {
   listRef.value?.focusItem(id)
 }
 
+async function leaveToList(): Promise<void> {
+  allowLeave = true
+  await router.push('/')
+  allowLeave = false
+}
+
+async function onCancel(): Promise<void> {
+  const hasChanges = editor.dirty
+  const confirmed = await requestConfirm({
+    title: hasChanges ? 'Отменить редактирование?' : 'Закрыть редактирование?',
+    message: hasChanges
+      ? 'Все несохранённые изменения будут потеряны.'
+      : 'Изменений нет, вы вернётесь к списку заметок.',
+    confirmText: hasChanges ? 'Отменить редактирование' : 'Закрыть',
+    cancelText: 'Продолжить редактирование',
+    tone: hasChanges ? 'danger' : 'default',
+  })
+  if (!confirmed) return
+
+  editor.cancel()
+  await leaveToList()
+}
+
+async function onDelete(): Promise<void> {
+  const title = editor.current.title.trim() || 'Без названия'
+  const confirmed = await requestConfirm({
+    title: 'Удалить заметку?',
+    message: editor.isNew
+      ? 'Несохранённая заметка и её черновик будут удалены.'
+      : `Заметка «${title}» будет удалена без возможности восстановления.`,
+    confirmText: 'Удалить',
+    cancelText: 'Отмена',
+    tone: 'danger',
+  })
+  if (!confirmed) return
+
+  const id = editor.noteId
+  const wasNew = editor.isNew
+  editor.cancel()
+  if (!wasNew) notes.remove(id)
+  await leaveToList()
+}
+
+async function confirmLeave(): Promise<boolean> {
+  if (allowLeave || !editor.dirty) return true
+  const confirmed = await requestConfirm({
+    title: 'Выйти без сохранения?',
+    message: 'Несохранённые изменения будут потеряны.',
+    confirmText: 'Выйти',
+    cancelText: 'Остаться',
+    tone: 'danger',
+  })
+  if (confirmed) editor.cancel()
+  return confirmed
+}
+
+onBeforeRouteLeave(confirmLeave)
+
+onBeforeRouteUpdate((to, from) => {
+  if (to.params.id === from.params.id) return true
+  return confirmLeave()
+})
+
 onBeforeUnmount(() => {
   editor.commitText()
 })
@@ -78,6 +149,9 @@ onBeforeUnmount(() => {
   </EmptyState>
 
   <form v-else-if="editor.status === 'ready'" class="editor" novalidate @submit.prevent="onSave">
+    <div>
+      <BaseButton variant="ghost" to="/">← К списку</BaseButton>
+    </div>
     <h1 class="editor__title">{{ editor.isNew ? 'Новая заметка' : 'Редактирование заметки' }}</h1>
 
     <BaseTextField
@@ -108,7 +182,16 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <EditorToolbar :dirty="editor.dirty" :just-saved="justSaved" />
+    <EditorToolbar
+      :dirty="editor.dirty"
+      :just-saved="justSaved"
+      :can-undo="editor.canUndo"
+      :can-redo="editor.canRedo"
+      @undo="editor.undo"
+      @redo="editor.redo"
+      @cancel="onCancel"
+      @delete="onDelete"
+    />
   </form>
 </template>
 

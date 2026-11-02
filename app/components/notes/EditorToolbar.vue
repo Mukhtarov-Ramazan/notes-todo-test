@@ -4,6 +4,15 @@ import { computed } from 'vue'
 const props = defineProps<{
   dirty: boolean
   justSaved: boolean
+  canUndo: boolean
+  canRedo: boolean
+}>()
+
+const emit = defineEmits<{
+  undo: []
+  redo: []
+  cancel: []
+  delete: []
 }>()
 
 const statusText = computed(() => {
@@ -19,7 +28,25 @@ const statusText = computed(() => {
       {{ statusText }}
     </p>
     <div class="editor-toolbar__actions">
+      <BaseIconButton
+        v-bind="{ ariaLabel: 'Отменить изменение (Ctrl+Z)' }"
+        title="Отменить изменение (Ctrl+Z)"
+        :disabled="!canUndo"
+        @click="emit('undo')"
+      >
+        <span aria-hidden="true">↶</span>
+      </BaseIconButton>
+      <BaseIconButton
+        v-bind="{ ariaLabel: 'Повторить изменение (Shift+Ctrl+Z)' }"
+        title="Повторить изменение (Shift+Ctrl+Z)"
+        :disabled="!canRedo"
+        @click="emit('redo')"
+      >
+        <span aria-hidden="true">↷</span>
+      </BaseIconButton>
       <BaseButton type="submit" variant="primary" :disabled="!dirty">Сохранить</BaseButton>
+      <BaseButton variant="secondary" @click="emit('cancel')">Отменить редактирование</BaseButton>
+      <BaseButton variant="danger" @click="emit('delete')">Удалить</BaseButton>
     </div>
   </div>
 </template>
