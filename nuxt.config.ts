@@ -6,6 +6,16 @@ export default defineNuxtConfig({
   components: [{ path: '~/components', pathPrefix: false }],
   css: ['~/assets/styles/main.scss'],
   typescript: { strict: true },
+  vite: {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData:
+            '@use "~/assets/styles/tokens" as *; @use "~/assets/styles/mixins" as *;\n'
+        }
+      }
+    }
+  },
   app: {
     head: {
       htmlAttrs: { lang: 'ru' },
