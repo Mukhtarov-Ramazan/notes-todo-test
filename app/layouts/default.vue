@@ -1,9 +1,18 @@
+<script setup lang="ts">
+import { useNotesStore } from '~/stores/notes'
+
+const notes = useNotesStore()
+</script>
+
 <template>
   <div class="layout">
     <header class="layout__header">
       <div class="layout__container layout__bar">
         <NuxtLink to="/" class="layout__brand">Заметки</NuxtLink>
       </div>
+      <p v-if="notes.persistError" class="layout__warning" role="status">
+        Не удалось сохранить данные в браузере. Возможно, хранилище переполнено или отключено.
+      </p>
     </header>
     <main class="layout__main layout__container">
       <slot />
@@ -48,6 +57,15 @@
     font-weight: 700;
     color: var(--color-text);
     text-decoration: none;
+  }
+
+  &__warning {
+    margin: 0;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+    text-align: center;
+    color: var(--color-danger-contrast);
+    background: var(--color-danger);
   }
 
   &__main {

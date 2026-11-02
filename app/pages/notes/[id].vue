@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { TITLE_MAX } from '~/lib/constants'
 import { requestConfirm } from '~/composables/useConfirm'
 import { useUndoRedoHotkeys } from '~/composables/useUndoRedoHotkeys'
@@ -32,19 +32,80 @@ const titleError = computed(() => {
   return submitted.value && !result.ok ? result.titleError : ''
 })
 
+async function offerDraftRestore(): Promise<void> {
+  const draft = editor.pendingDraft
+  if (!draft) return
+
+  const outdated = draft.baseUpdatedAt !== editor.baseUpdatedAt
+  const restore = await requestConfirm({
+    title: 'Восстановить несохранённые изменения?',
+    message: outdated
+      ? 'Найден черновик, но заметка была изменена после его создания. При восстановлении версия из списка будет заменена черновиком.'
+      : 'Найден черновик с несохранёнными изменениями этой заметки.',
+    confirmText: 'Восстановить',
+    cancelText: 'Отбросить',
+    initialFocus: 'confirm',
+  })
+  if (editor.pendingDraft !== draft) return
+
+  if (restore) editor.restoreDraft()
+  else editor.discardDraft()
+}
+
 watch(
   idParam,
   async (id) => {
     editor.open(id)
     submitted.value = false
     justSaved.value = false
-    if (editor.status === 'ready' && editor.isNew) {
+    if (editor.status !== 'ready') return
+
+    await offerDraftRestore()
+    if (editor.isNew && !editor.dirty) {
       await nextTick()
       titleRef.value?.focus()
     }
   },
   { immediate: true },
 )
+
+async function onDeletedElsewhere(): Promise<void> {
+  const saveAgain = await requestConfirm({
+    title: 'Заметка удалена в другой вкладке',
+    message: 'Вы можете сохранить текущую версию как новую заметку или закрыть редактор.',
+    confirmText: 'Сохранить как новую',
+    cancelText: 'Закрыть',
+    initialFocus: 'confirm',
+  })
+
+  if (saveAgain) {
+    submitted.value = true
+    const result = editor.saveAsNew()
+    if (!result.ok) titleRef.value?.focus()
+    else justSaved.value = true
+    return
+  }
+
+  allowLeave = true
+  editor.cancel()
+  await leaveToList()
+}
+
+watch(
+  () => editor.status,
+  (status) => {
+    if (status === 'deleted-elsewhere' && !allowLeave) void onDeletedElsewhere()
+  },
+)
+
+function flushDraftOnHide(): void {
+  if (document.visibilityState === 'hidden') editor.flushDraft()
+}
+
+onMounted(() => {
+  window.addEventListener('pagehide', editor.flushDraft)
+  document.addEventListener('visibilitychange', flushDraftOnHide)
+})
 
 watch(
   () => editor.dirty,
@@ -109,6 +170,7 @@ async function onDelete(): Promise<void> {
 
   const id = editor.noteId
   const wasNew = editor.isNew
+  allowLeave = true
   editor.cancel()
   if (!wasNew) notes.remove(id)
   await leaveToList()
@@ -135,7 +197,10 @@ onBeforeRouteUpdate((to, from) => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('pagehide', editor.flushDraft)
+  document.removeEventListener('visibilitychange', flushDraftOnHide)
   editor.commitText()
+  editor.flushDraft()
 })
 </script>
 
@@ -148,7 +213,9 @@ onBeforeUnmount(() => {
     <BaseButton variant="primary" to="/">К списку заметок</BaseButton>
   </EmptyState>
 
-  <form v-else-if="editor.status === 'ready'" class="editor" novalidate @submit.prevent="onSave">
+  <form
+    v-else-if="editor.status === 'ready' || editor.status === 'deleted-elsewhere'"
+    class="editor" novalidate @submit.prevent="onSave">
     <div>
       <BaseButton variant="ghost" to="/">← К списку</BaseButton>
     </div>

@@ -1,6 +1,6 @@
-import { computed, ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef, watch } from 'vue'
 import { defineStore } from 'pinia'
-import { TEXT_COMMIT_DELAY_MS } from '~/lib/constants'
+import { DRAFT_SAVE_DELAY_MS, SCHEMA_VERSION, TEXT_COMMIT_DELAY_MS } from '~/lib/constants'
 import { createDebouncedRunner } from '~/lib/debounce'
 import { createHistory } from '~/lib/history'
 import {
@@ -15,8 +15,8 @@ import {
   normalizeForSave,
   validateForSave,
 } from '~/lib/note-ops'
-import { draftKey, removeDraft } from '~/lib/storage'
-import type { Change, Note, NoteContent, SaveValidation } from '~/lib/types'
+import { draftKey, loadDraft, removeDraft, saveDraft } from '~/lib/storage'
+import type { Change, Note, NoteContent, SaveValidation, StoredDraft } from '~/lib/types'
 import { useNotesStore } from '~/stores/notes'
 
 export type EditorStatus = 'loading' | 'ready' | 'not-found' | 'deleted-elsewhere'
@@ -48,11 +48,14 @@ export const useEditorStore = defineStore('editor', () => {
   const pendingText = shallowRef<PendingText | null>(null)
   const canUndo = ref(false)
   const canRedo = ref(false)
+  const baseUpdatedAt = ref<number | null>(null)
+  const pendingDraft = shallowRef<StoredDraft | null>(null)
 
   const dirty = computed(() => !contentEquals(current.value, base.value))
   const hasOpenTextSession = computed(() => pendingText.value !== null)
 
   const textTimer = createDebouncedRunner(commitText, TEXT_COMMIT_DELAY_MS)
+  const draftTimer = createDebouncedRunner(writeDraft, DRAFT_SAVE_DELAY_MS)
 
   function syncHistoryFlags(): void {
     canUndo.value = history.canUndo
@@ -61,6 +64,7 @@ export const useEditorStore = defineStore('editor', () => {
 
   function resetSession(): void {
     textTimer.cancel()
+    draftTimer.cancel()
     pendingText.value = null
     history.clear()
     syncHistoryFlags()
@@ -70,16 +74,46 @@ export const useEditorStore = defineStore('editor', () => {
     return draftKey(isNew.value ? NEW_NOTE_PARAM : noteId.value)
   }
 
+  function writeDraft(): void {
+    if (status.value !== 'ready') return
+    if (!dirty.value) {
+      removeDraft(currentDraftKey())
+      return
+    }
+    saveDraft({
+      version: SCHEMA_VERSION,
+      noteId: noteId.value,
+      isNew: isNew.value,
+      baseUpdatedAt: baseUpdatedAt.value,
+      content: cloneContent(current.value),
+      savedAt: Date.now(),
+    })
+  }
+
+  function checkStoredDraft(): void {
+    const key = currentDraftKey()
+    const draft = loadDraft(key)
+    if (!draft) return
+    if (contentEquals(draft.content, base.value)) {
+      removeDraft(key)
+      return
+    }
+    pendingDraft.value = draft
+  }
+
   function open(idParam: string): void {
     resetSession()
+    pendingDraft.value = null
 
     if (idParam === NEW_NOTE_PARAM) {
       noteId.value = createId()
       isNew.value = true
       createdAt.value = 0
+      baseUpdatedAt.value = null
       base.value = createEmptyContent()
       current.value = createEmptyContent()
       status.value = 'ready'
+      checkStoredDraft()
       return
     }
 
@@ -88,6 +122,7 @@ export const useEditorStore = defineStore('editor', () => {
     isNew.value = false
     if (!note) {
       createdAt.value = 0
+      baseUpdatedAt.value = null
       base.value = createEmptyContent()
       current.value = createEmptyContent()
       status.value = 'not-found'
@@ -95,10 +130,44 @@ export const useEditorStore = defineStore('editor', () => {
     }
 
     createdAt.value = note.createdAt
+    baseUpdatedAt.value = note.updatedAt
     base.value = contentOf(note)
     current.value = cloneContent(base.value)
     status.value = 'ready'
+    checkStoredDraft()
   }
+
+  function restoreDraft(): void {
+    const draft = pendingDraft.value
+    if (!draft) return
+    pendingDraft.value = null
+    resetSession()
+    if (isNew.value) noteId.value = draft.noteId
+    current.value = cloneContent(draft.content)
+  }
+
+  function discardDraft(): void {
+    pendingDraft.value = null
+    removeDraft(currentDraftKey())
+  }
+
+  function flushDraft(): void {
+    draftTimer.flush()
+  }
+
+  watch(
+    current,
+    () => {
+      if (status.value !== 'ready' || pendingDraft.value) return
+      if (dirty.value) {
+        draftTimer.schedule()
+      } else {
+        draftTimer.cancel()
+        removeDraft(currentDraftKey())
+      }
+    },
+    { deep: true },
+  )
 
   function commitText(): void {
     textTimer.cancel()
@@ -203,12 +272,32 @@ export const useEditorStore = defineStore('editor', () => {
 
     const draftToRemove = currentDraftKey()
     createdAt.value = note.createdAt
+    baseUpdatedAt.value = note.updatedAt
     isNew.value = false
     base.value = cloneContent(normalized)
     current.value = cloneContent(normalized)
     resetSession()
     removeDraft(draftToRemove)
     return validation
+  }
+
+  watch(
+    () => (status.value === 'ready' && !isNew.value ? notes.getById(noteId.value) : undefined),
+    (note) => {
+      if (note || status.value !== 'ready' || isNew.value) return
+      status.value = 'deleted-elsewhere'
+      resetSession()
+      pendingDraft.value = null
+      removeDraft(currentDraftKey())
+    },
+  )
+
+  /** Воссоздаёт удалённую в другой вкладке заметку с тем же id. */
+  function saveAsNew(): SaveValidation {
+    isNew.value = true
+    createdAt.value = 0
+    status.value = 'ready'
+    return save()
   }
 
   function cancel(): void {
@@ -227,6 +316,8 @@ export const useEditorStore = defineStore('editor', () => {
     canUndo,
     canRedo,
     hasOpenTextSession,
+    baseUpdatedAt,
+    pendingDraft,
     open,
     setTitle,
     setTodoText,
@@ -238,5 +329,9 @@ export const useEditorStore = defineStore('editor', () => {
     redo,
     save,
     cancel,
+    saveAsNew,
+    restoreDraft,
+    discardDraft,
+    flushDraft,
   }
 })
