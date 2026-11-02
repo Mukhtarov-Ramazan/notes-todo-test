@@ -1,0 +1,28 @@
+{
+  "name": "notes-todo-test",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "typecheck": "nuxt typecheck",
+    "lint": "eslint .",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^1.0.3",
+    "nuxt": "^4.6.3",
+    "pinia": "^4.1.0",
+    "sass": "^1.107.1",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
+    "eslint": "^10.14.0",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.14"
+  }
+}
