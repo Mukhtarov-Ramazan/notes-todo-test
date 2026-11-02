@@ -73,6 +73,14 @@ const statusText = computed(() => {
     }
   }
 
+  &__status {
+    flex: 1 1 100%;
+
+    @include respond-up($bp-md) {
+      flex: 0 1 auto;
+    }
+  }
+
   &__actions {
     display: flex;
     flex-wrap: wrap;

@@ -6,6 +6,7 @@ const notes = useNotesStore()
 
 <template>
   <div class="layout">
+    <a href="#main" class="layout__skip">Перейти к содержимому</a>
     <header class="layout__header">
       <div class="layout__container layout__bar">
         <NuxtLink to="/" class="layout__brand">Заметки</NuxtLink>
@@ -14,7 +15,7 @@ const notes = useNotesStore()
         Не удалось сохранить данные в браузере. Возможно, хранилище переполнено или отключено.
       </p>
     </header>
-    <main class="layout__main layout__container">
+    <main id="main" class="layout__main layout__container" tabindex="-1">
       <slot />
     </main>
   </div>
@@ -57,6 +58,25 @@ const notes = useNotesStore()
     font-weight: 700;
     color: var(--color-text);
     text-decoration: none;
+  }
+
+  &__skip {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: var(--z-toast);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface);
+    border-radius: var(--radius-sm);
+    transform: translateY(-200%);
+
+    &:focus {
+      transform: none;
+    }
+  }
+
+  &__main:focus {
+    outline: none;
   }
 
   &__warning {
