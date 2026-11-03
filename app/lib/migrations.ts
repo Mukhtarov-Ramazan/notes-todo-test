@@ -2,16 +2,13 @@ import { SCHEMA_VERSION } from './constants'
 
 export type StoredRecord = Record<string, unknown>
 
-/** Преобразует данные версии N в версию N + 1. */
+/** Поднимает данные с версии N до N + 1. */
 export type Migration = (data: StoredRecord) => StoredRecord
 
-/** Ключ — версия, из которой мигрируем. Пока схема одна, список пуст. */
+/** Ключ — версия, с которой мигрируем. Версия схемы пока одна, поэтому пусто. */
 export const migrations: Record<number, Migration> = {}
 
-/**
- * Прогоняет данные по цепочке миграций от `fromVersion` до `targetVersion`.
- * Возвращает `null`, если в цепочке нет нужного звена.
- */
+/** Прогоняет данные по миграциям до нужной версии. Если какого-то шага нет, вернёт `null`. */
 export function migrateData(
   data: StoredRecord,
   fromVersion: number,

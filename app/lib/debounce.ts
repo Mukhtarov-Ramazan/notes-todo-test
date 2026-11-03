@@ -5,10 +5,7 @@ export interface DebouncedRunner {
   isPending(): boolean
 }
 
-/**
- * Откладывает вызов `fn` на `delayMs`; повторный `schedule` перезапускает таймер.
- * `flush` выполняет отложенный вызов немедленно (если он запланирован), `cancel` отменяет его.
- */
+/** Каждый `schedule` перезапускает таймер. `flush` вызывает `fn` сразу, `cancel` отменяет вызов. */
 export function createDebouncedRunner(fn: () => void, delayMs: number): DebouncedRunner {
   let timer: ReturnType<typeof setTimeout> | null = null
 

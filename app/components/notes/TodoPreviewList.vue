@@ -16,22 +16,39 @@ const hiddenCount = computed(() => Math.max(0, props.todos.length - props.max))
 </script>
 
 <template>
-  <p v-if="todos.length === 0" class="todo-preview__empty">Нет пунктов</p>
+  <p v-if="todos.length === 0" class="todo-preview__empty">
+    Нет пунктов
+  </p>
+
   <div v-else class="todo-preview">
     <ul class="todo-preview__list">
-      <li v-for="todo in visible" :key="todo.id" class="todo-preview__item">
+      <li
+        v-for="todo in visible"
+        :key="todo.id"
+        class="todo-preview__item"
+      >
         <span
           class="todo-preview__mark"
           :class="{ 'todo-preview__mark--done': todo.done }"
           aria-hidden="true"
         />
-        <span class="todo-preview__status">{{ todo.done ? 'выполнено' : 'не выполнено' }}:</span>
-        <span class="todo-preview__text" :class="{ 'todo-preview__text--done': todo.done }">
+
+        <span class="todo-preview__status">
+          {{ todo.done ? 'выполнено' : 'не выполнено' }}:
+        </span>
+
+        <span
+          class="todo-preview__text"
+          :class="{ 'todo-preview__text--done': todo.done }"
+        >
           {{ todo.text || 'Пустой пункт' }}
         </span>
       </li>
     </ul>
-    <p v-if="hiddenCount > 0" class="todo-preview__more">ещё {{ hiddenCount }}</p>
+
+    <p v-if="hiddenCount > 0" class="todo-preview__more">
+      ещё {{ hiddenCount }}
+    </p>
   </div>
 </template>
 

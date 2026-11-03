@@ -35,7 +35,7 @@ function removeRaw(key: string, storage?: StorageLike): void {
   try {
     resolveStorage(storage)?.removeItem(key)
   } catch {
-    // storage недоступен — удалять нечего
+    // нет доступа к storage, ничего не делаем
   }
 }
 
@@ -93,9 +93,8 @@ function isStoredDraft(value: unknown): value is StoredDraft {
 }
 
 /**
- * Читает JSON по ключу, проверяет версию схемы и прогоняет миграции.
- * Битые данные и данные из будущей версии копирует в `<key>:backup-<timestamp>`
- * и возвращает `null`.
+ * Читает и проверяет данные по ключу, при необходимости мигрирует.
+ * Если данные битые или от более новой версии, сохраняет копию в `<key>:backup-<время>` и вернёт `null`.
  */
 function readVersioned(
   key: string,
@@ -132,7 +131,7 @@ export function draftKey(noteId: string): string {
   return `${DRAFT_KEY_PREFIX}${noteId}`
 }
 
-/** Загружает заметки; невалидные заметки пропускает, при битых данных возвращает `[]`. */
+/** Невалидные заметки пропускаются, а если данные битые целиком, вернёт `[]`. */
 export function loadNotes(storage?: StorageLike): Note[] {
   const data = readVersioned(NOTES_KEY, (d) => Array.isArray(d.notes), storage)
   if (!data || !Array.isArray(data.notes)) return []

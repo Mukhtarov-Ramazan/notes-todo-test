@@ -20,10 +20,22 @@ withDefaults(
 </script>
 
 <template>
-  <NuxtLink v-if="to" :to="to" class="base-button" :class="`base-button--${variant}`">
+  <NuxtLink
+    v-if="to"
+    :to="to"
+    class="base-button"
+    :class="`base-button--${variant}`"
+  >
     <slot />
   </NuxtLink>
-  <button v-else :type="type" :disabled="disabled" class="base-button" :class="`base-button--${variant}`">
+
+  <button
+    v-else
+    :type="type"
+    :disabled="disabled"
+    class="base-button"
+    :class="`base-button--${variant}`"
+  >
     <slot />
   </button>
 </template>

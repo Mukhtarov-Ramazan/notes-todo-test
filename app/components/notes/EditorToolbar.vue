@@ -24,9 +24,14 @@ const statusText = computed(() => {
 
 <template>
   <div class="editor-toolbar">
-    <p class="editor-toolbar__status" :class="{ 'editor-toolbar__status--dirty': dirty }" aria-live="polite">
+    <p
+      class="editor-toolbar__status"
+      :class="{ 'editor-toolbar__status--dirty': dirty }"
+      aria-live="polite"
+    >
       {{ statusText }}
     </p>
+
     <div class="editor-toolbar__actions">
       <BaseIconButton
         v-bind="{ ariaLabel: 'Отменить изменение (Ctrl+Z)' }"
@@ -36,6 +41,7 @@ const statusText = computed(() => {
       >
         <span aria-hidden="true">↶</span>
       </BaseIconButton>
+
       <BaseIconButton
         v-bind="{ ariaLabel: 'Повторить изменение (Shift+Ctrl+Z)' }"
         title="Повторить изменение (Shift+Ctrl+Z)"
@@ -44,8 +50,11 @@ const statusText = computed(() => {
       >
         <span aria-hidden="true">↷</span>
       </BaseIconButton>
+
       <BaseButton type="submit" variant="primary" :disabled="!dirty">Сохранить</BaseButton>
+
       <BaseButton variant="secondary" @click="emit('cancel')">Отменить редактирование</BaseButton>
+
       <BaseButton variant="danger" @click="emit('delete')">Удалить</BaseButton>
     </div>
   </div>

@@ -8,12 +8,17 @@ const emit = defineEmits<{ delete: [] }>()
 
 <template>
   <article class="note-card">
-    <h2 class="note-card__title" :class="{ 'note-card__title--empty': !note.title.trim() }">
+    <h2
+      class="note-card__title"
+      :class="{ 'note-card__title--empty': !note.title.trim() }"
+    >
       {{ note.title.trim() || 'Без названия' }}
     </h2>
+
     <div class="note-card__preview">
       <TodoPreviewList :todos="note.todos" />
     </div>
+
     <div class="note-card__actions">
       <BaseButton :to="`/notes/${note.id}`">Изменить</BaseButton>
       <BaseButton variant="danger" @click="emit('delete')">Удалить</BaseButton>

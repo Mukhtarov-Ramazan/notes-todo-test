@@ -15,10 +15,7 @@ export interface HistoryOptions {
   limit?: number
 }
 
-/**
- * Стек изменений для undo/redo. Хранит только записи-патчи,
- * при превышении лимита вытесняет самую старую запись.
- */
+/** Хранит патчи, а не копии заметки. Когда лимит превышен, старые записи выпадают. */
 export function createHistory<C>(options: HistoryOptions = {}): History<C> {
   const limit = Math.max(1, options.limit ?? HISTORY_LIMIT)
   let undoStack: C[] = []

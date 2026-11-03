@@ -215,11 +215,17 @@ onBeforeUnmount(() => {
 
   <form
     v-else-if="editor.status === 'ready' || editor.status === 'deleted-elsewhere'"
-    class="editor" novalidate @submit.prevent="onSave">
+    class="editor"
+    novalidate
+    @submit.prevent="onSave"
+  >
     <div>
       <BaseButton variant="ghost" to="/">← К списку</BaseButton>
     </div>
-    <h1 class="editor__title">{{ editor.isNew ? 'Новая заметка' : 'Редактирование заметки' }}</h1>
+
+    <h1 class="editor__title">
+      {{ editor.isNew ? 'Новая заметка' : 'Редактирование заметки' }}
+    </h1>
 
     <BaseTextField
       ref="titleRef"
@@ -234,7 +240,11 @@ onBeforeUnmount(() => {
 
     <section class="editor__todos" aria-labelledby="editor-todos-heading">
       <h2 id="editor-todos-heading" class="editor__subtitle">Задачи</h2>
-      <p v-if="editor.current.todos.length === 0" class="editor__empty">Пунктов пока нет.</p>
+
+      <p v-if="editor.current.todos.length === 0" class="editor__empty">
+        Пунктов пока нет.
+      </p>
+
       <TodoEditorList
         ref="listRef"
         :todos="editor.current.todos"
@@ -244,6 +254,7 @@ onBeforeUnmount(() => {
         @add-after="addTodoAfter"
         @blur="editor.commitText"
       />
+
       <div>
         <BaseButton variant="secondary" @click="addTodoAfter()">Добавить пункт</BaseButton>
       </div>

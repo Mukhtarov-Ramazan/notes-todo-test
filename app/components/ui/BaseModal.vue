@@ -72,13 +72,22 @@ onBeforeUnmount(() => {
         :aria-describedby="description ? descriptionId : undefined"
         tabindex="-1"
       >
-        <h2 :id="titleId" class="base-modal__title">{{ title }}</h2>
-        <p v-if="description" :id="descriptionId" class="base-modal__description">
+        <h2 :id="titleId" class="base-modal__title">
+          {{ title }}
+        </h2>
+
+        <p
+          v-if="description"
+          :id="descriptionId"
+          class="base-modal__description"
+        >
           {{ description }}
         </p>
+
         <div v-if="$slots.default" class="base-modal__body">
           <slot />
         </div>
+
         <div v-if="$slots.footer" class="base-modal__footer">
           <slot name="footer" />
         </div>

@@ -9,7 +9,13 @@ const model = defineModel<boolean>({ default: false })
 
 <template>
   <label class="base-checkbox">
-    <input v-model="model" type="checkbox" class="base-checkbox__input" :aria-label="ariaLabel">
+    <input
+      v-model="model"
+      type="checkbox"
+      class="base-checkbox__input"
+      :aria-label="ariaLabel"
+    >
+
     <span v-if="label || $slots.default" class="base-checkbox__label">
       <slot>{{ label }}</slot>
     </span>

@@ -11,10 +11,7 @@ function isTextField(target: EventTarget | null): boolean {
   return target.isContentEditable
 }
 
-/**
- * Глобальные Ctrl/Cmd+Z и Shift+Ctrl/Cmd+Z на странице редактора.
- * Пока в текстовом поле открыта текстовая сессия, откат делает сам браузер.
- */
+/** Ctrl/Cmd+Z и Shift+Ctrl/Cmd+Z. Пока в поле идёт набор, не мешаем нативному undo. */
 export function useUndoRedoHotkeys() {
   const editor = useEditorStore()
   const modalStack = useModalStack()

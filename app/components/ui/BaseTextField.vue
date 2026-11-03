@@ -36,6 +36,7 @@ defineExpose({ focus })
     >
       {{ label }}
     </label>
+
     <input
       :id="inputId"
       ref="inputRef"
@@ -48,7 +49,12 @@ defineExpose({ focus })
       :aria-describedby="error ? errorId : undefined"
       @blur="emit('blur', $event)"
     >
-    <p v-if="error" :id="errorId" class="base-text-field__error">
+
+    <p
+      v-if="error"
+      :id="errorId"
+      class="base-text-field__error"
+    >
       {{ error }}
     </p>
   </div>

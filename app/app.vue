@@ -2,5 +2,6 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+
   <ModalHost />
 </template>

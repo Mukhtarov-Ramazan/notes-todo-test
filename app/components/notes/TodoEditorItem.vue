@@ -28,6 +28,7 @@ function onEnter(event: KeyboardEvent): void {
       :aria-label="`Пункт ${index + 1}: выполнен`"
       @update:model-value="emit('toggle')"
     />
+
     <BaseTextField
       class="todo-editor-item__text"
       :model-value="todo.text"
@@ -39,7 +40,11 @@ function onEnter(event: KeyboardEvent): void {
       @keydown.enter.prevent="onEnter"
       @blur="emit('blur')"
     />
-    <BaseIconButton v-bind="{ ariaLabel: `Удалить пункт ${index + 1}` }" @click="emit('remove')">
+
+    <BaseIconButton
+      v-bind="{ ariaLabel: `Удалить пункт ${index + 1}` }"
+      @click="emit('remove')"
+    >
       <span aria-hidden="true">✕</span>
     </BaseIconButton>
   </div>

@@ -21,7 +21,7 @@ const current = shallowRef<ConfirmRequest | null>(null)
 const queue: ConfirmRequest[] = []
 let counter = 0
 
-/** Показывает окно подтверждения; параллельные запросы выстраиваются в очередь. */
+/** Открывает подтверждение. Если уже открыто другое, запрос ждёт в очереди. */
 export function requestConfirm(options: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => {
     const tone = options.tone ?? 'default'

@@ -7,6 +7,14 @@ const props = defineProps<{
 
 const isNotFound = computed(() => props.error.statusCode === 404)
 
+const title = computed(() => (isNotFound.value ? 'Страница не найдена' : 'Что-то пошло не так'))
+
+const description = computed(() =>
+  isNotFound.value
+    ? 'Такого адреса в приложении нет.'
+    : 'Произошла непредвиденная ошибка. Попробуйте вернуться на главную.',
+)
+
 function goHome(): void {
   void clearError({ redirect: '/' })
 }
@@ -15,12 +23,8 @@ function goHome(): void {
 <template>
   <NuxtLayout>
     <EmptyState
-      :title="isNotFound ? 'Страница не найдена' : 'Что-то пошло не так'"
-      :description="
-        isNotFound
-          ? 'Такого адреса в приложении нет.'
-          : 'Произошла непредвиденная ошибка. Попробуйте вернуться на главную.'
-      "
+      :title="title"
+      :description="description"
     >
       <BaseButton variant="primary" @click="goHome">На главную</BaseButton>
     </EmptyState>

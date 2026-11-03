@@ -9,7 +9,7 @@ import type {
 
 export const TITLE_REQUIRED_MESSAGE = 'Введите название заметки'
 
-/** Генерирует уникальный id; без `crypto.randomUUID` (небезопасный контекст) использует запасной вариант. */
+/** Запасной вариант нужен, потому что в небезопасном контексте `crypto.randomUUID` недоступен. */
 export function createId(): string {
   const cryptoApi = globalThis.crypto
   if (cryptoApi && typeof cryptoApi.randomUUID === 'function') {
@@ -64,10 +64,7 @@ function withoutTodo(todos: TodoItem[], todoId: string): TodoItem[] {
   return todos.filter((t) => t.id !== todoId).map(cloneTodo)
 }
 
-/**
- * Применяет запись истории к содержимому и возвращает новый объект.
- * Для неизвестного `todoId` возвращает копию без изменений.
- */
+/** Возвращает новый объект. Если пункта с таким `todoId` нет, содержимое не меняется. */
 export function applyChange(
   content: NoteContent,
   change: Change,
@@ -116,7 +113,7 @@ export function applyChange(
   }
 }
 
-/** Обрезает заголовок и тексты пунктов, отбрасывает пустые пункты. */
+/** Убирает пробелы по краям и выкидывает пустые пункты. */
 export function normalizeForSave(content: NoteContent): NoteContent {
   return {
     title: content.title.trim(),

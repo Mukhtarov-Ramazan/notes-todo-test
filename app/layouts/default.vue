@@ -7,15 +7,26 @@ const notes = useNotesStore()
 <template>
   <div class="layout">
     <a href="#main" class="layout__skip">Перейти к содержимому</a>
+
     <header class="layout__header">
       <div class="layout__container layout__bar">
         <NuxtLink to="/" class="layout__brand">Заметки</NuxtLink>
       </div>
-      <p v-if="notes.persistError" class="layout__warning" role="status">
+
+      <p
+        v-if="notes.persistError"
+        class="layout__warning"
+        role="status"
+      >
         Не удалось сохранить данные в браузере. Возможно, хранилище переполнено или отключено.
       </p>
     </header>
-    <main id="main" class="layout__main layout__container" tabindex="-1">
+
+    <main
+      id="main"
+      class="layout__main layout__container"
+      tabindex="-1"
+    >
       <slot />
     </main>
   </div>

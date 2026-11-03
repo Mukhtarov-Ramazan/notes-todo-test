@@ -13,7 +13,12 @@ withDefaults(
 </script>
 
 <template>
-  <button :type="type" :disabled="disabled" :aria-label="ariaLabel" class="base-icon-button">
+  <button
+    :type="type"
+    :disabled="disabled"
+    :aria-label="ariaLabel"
+    class="base-icon-button"
+  >
     <slot />
   </button>
 </template>

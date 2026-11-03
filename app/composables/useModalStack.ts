@@ -16,7 +16,7 @@ function setPageLocked(locked: boolean) {
   }
 }
 
-/** Общий счётчик открытых модальных окон: фон блокируется, пока открыто хотя бы одно. */
+/** Учёт открытых модалок. Фон заблокирован, пока открыта хотя бы одна. */
 export function useModalStack() {
   const hasOpenModal = computed(() => stack.value.length > 0)
 

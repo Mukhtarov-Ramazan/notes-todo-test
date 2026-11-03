@@ -222,7 +222,7 @@ export const useEditorStore = defineStore('editor', () => {
     record({ type: 'todo-toggle', todoId, before: todo.done, after: !todo.done })
   }
 
-  /** Добавляет пустой пункт после `afterIndex` (или в конец) и возвращает его id. */
+  /** Без `afterIndex` пункт добавляется в конец. Возвращает id нового пункта. */
   function addTodo(afterIndex?: number): string {
     commitText()
     const length = current.value.todos.length
@@ -292,7 +292,7 @@ export const useEditorStore = defineStore('editor', () => {
     },
   )
 
-  /** Воссоздаёт удалённую в другой вкладке заметку с тем же id. */
+  /** Заметку удалили в другой вкладке, создаём её заново с тем же id. */
   function saveAsNew(): SaveValidation {
     isNew.value = true
     createdAt.value = 0

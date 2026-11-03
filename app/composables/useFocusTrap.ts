@@ -14,7 +14,7 @@ export function getFocusable(container: HTMLElement): HTMLElement[] {
   )
 }
 
-/** Удерживает Tab / Shift+Tab и фокус внутри контейнера, пока isActive() возвращает true. */
+/** Не выпускает фокус за пределы контейнера, пока isActive() === true. */
 export function useFocusTrap(container: Ref<HTMLElement | null>, isActive: () => boolean) {
   function onKeydown(event: KeyboardEvent) {
     const root = container.value

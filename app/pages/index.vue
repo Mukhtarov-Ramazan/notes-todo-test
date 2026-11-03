@@ -27,7 +27,14 @@ async function onDelete(note: Note) {
 <template>
   <div class="home">
     <div class="home__head">
-      <h1 ref="headingRef" class="home__title" tabindex="-1">Заметки</h1>
+      <h1
+        ref="headingRef"
+        class="home__title"
+        tabindex="-1"
+      >
+        Заметки
+      </h1>
+
       <BaseButton variant="primary" to="/notes/new">Создать заметку</BaseButton>
     </div>
 
@@ -40,8 +47,15 @@ async function onDelete(note: Note) {
     </EmptyState>
 
     <ul v-else class="home__grid">
-      <li v-for="note in notes.sortedNotes" :key="note.id" class="home__cell">
-        <NoteCard :note="note" @delete="onDelete(note)" />
+      <li
+        v-for="note in notes.sortedNotes"
+        :key="note.id"
+        class="home__cell"
+      >
+        <NoteCard
+          :note="note"
+          @delete="onDelete(note)"
+        />
       </li>
     </ul>
   </div>

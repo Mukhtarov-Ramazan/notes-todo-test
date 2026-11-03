@@ -21,6 +21,7 @@ const emit = defineEmits<{ resolve: [result: boolean] }>()
       >
         {{ options.cancelText }}
       </BaseButton>
+
       <BaseButton
         :variant="options.tone === 'danger' ? 'danger' : 'primary'"
         :data-autofocus="options.initialFocus === 'confirm' ? '' : undefined"
