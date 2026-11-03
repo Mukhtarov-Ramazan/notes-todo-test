@@ -1,0 +1,12 @@
+node_modules
+.nuxt
+.output
+dist
+.git
+.gitignore
+.env
+CLAUDE.md
+tests
+Dockerfile
+docker-compose.yaml
+.dockerignore
